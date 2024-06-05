@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AutoComplete from './Components/AutoComplete';
 import './App.css';
+import loadAllCharacters from './api/api';
 
 export interface Character {
   id: number;
@@ -17,48 +18,51 @@ export interface Character {
   created: string;
 }
 
-const loadAllCharacters = async (): Promise<Character[]> => {
-  try {
-    const url = 'http://rickandmortyapi.com/api/character';
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error('Resource not found (404)');
-      } else if (res.status >= 500) {
-        throw new Error('Server error, please try again later');
-      } else {
-        throw new Error(`Unexpected error: ${res.status}`);
-      }
-    }
-
-    const data = await res.json();
-    console.log(data?.results);
-    return data?.results;
-  } catch (error) {
-    console.error('Failed to load characters:', error.message);
-    return [];
-  }
-};
 
 
 function App() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await loadAllCharacters();
-      setCharacters(data);
-      setLoading(false);
+    const fetchCharacters = async () => {
+      try {
+        const allCharacters = await loadAllCharacters();
+        setCharacters(allCharacters);
+      } catch (error) {
+        setError('Failed to load characters');
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchData();
-  }, []);
+
+    fetchCharacters();
+  }, [refreshKey]);
+
+  const handleRefresh = () => {
+    setRefreshKey((prevKey) => prevKey + 1);
+  };
 
   if (loading) {
     return (
       <main aria-busy="true" role="progressbar">
         <div className="loading" aria-label="Loading content, please wait..."></div>
+      </main>
+    );
+  }
+
+  if (error || !characters || characters.length === 0) {
+    return (
+      <main>
+        <div className='title'>
+          <h2>No Characters Available</h2>
+          <button className='btn' onClick={handleRefresh}>
+            refresh
+          </button>
+        </div>
       </main>
     );
   }
