@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Character } from '../App';
 
 interface AutoCompleteProps {
@@ -8,20 +8,42 @@ interface AutoCompleteProps {
 const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState<Character[]>([]);
+	const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+	const [debouncedSearch, setDebouncedSearch] = useState(search);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+	// using useCallback to make sure the function is memoized and does not unnecessarily re-render
+  const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearch(value);
+	}, []);
 
-    if (value.length > 0) {
+	useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 200);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
+  useEffect(() => {
+    if (debouncedSearch.length > 0) {
       const filtered = characters.filter(character =>
-        character.name.toLowerCase().includes(value.toLowerCase())
+        character.name.toLowerCase().includes(debouncedSearch.toLowerCase())
       );
       setSuggestions(filtered);
     } else {
       setSuggestions([]);
     }
-  };
+  }, [debouncedSearch, characters]);
+
+	const handleSelect = useCallback((character: Character) => {
+    setSelectedCharacter(character);
+    setSearch('');
+    setSuggestions([]);
+  }, []);
 
 	const getHighlightedText = (text: string, highlight: string) => {
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
@@ -55,12 +77,18 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
         {suggestions?.length > 0 && (
           <ul className="suggestions">
             {suggestions.map(character => (
-              <li key={character.id}>
-                {getHighlightedText(character.name, search)}
+              <li key={character.id} onClick={() => handleSelect(character)}>
+                {getHighlightedText(character.name, debouncedSearch)}
               </li>
             ))}
           </ul>
         )}
+				{selectedCharacter && (
+          <div className="selected-character">
+            Selected Character: {selectedCharacter.name}
+          </div>
+        )}
+
       </div>
     </section>
   );
