@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
-import AutoComplete from './Components/AutoComplete';
+import { useEffect, useState, lazy, Suspense } from 'react';
+//import AutoComplete from './Components/AutoComplete';
 import './App.css';
 import loadAllCharacters from './api/api';
 import { Character } from './types';
+import Loading from './Components/Loading';
 
+const AutoComplete = lazy(() => import('./Components/AutoComplete'));
 
 function App() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -33,12 +34,14 @@ function App() {
 
   if (loading) {
     return (
-      <main aria-busy="true" role="progressbar">
-        <div className="loading" aria-label="Loading content, please wait..."></div>
+      <main aria-busy="true">
+        <Loading />
       </main>
     );
   }
 
+
+  // let's display a refresh button if character cache is empty
   if (error || !characters || characters.length === 0) {
     return (
       <main>
@@ -54,7 +57,9 @@ function App() {
 
   return (
     <main>
-      <AutoComplete characters={characters} />
+      <Suspense fallback={<Loading />}>
+        <AutoComplete characters={characters} />
+      </Suspense>
     </main>
   );
 }

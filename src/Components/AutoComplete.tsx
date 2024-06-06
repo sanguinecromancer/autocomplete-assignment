@@ -62,8 +62,6 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
     }
   }, [debouncedSearch, characters]);
 
-
-
 	const getHighlightedText = (text: string, highlight: string) => {
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
     return (
@@ -102,6 +100,8 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
             ))}
           </ul>
         )}
+
+				
 				{selectedCharacter && (
           <div className="selected-character">
             Selected Character: {selectedCharacter.name}
