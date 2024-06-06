@@ -19,6 +19,9 @@ For performance I didn't make use of external libraries but used React's suspens
 And then for debouncing I made a custom function (not from lodash).
 Components could be also wrapped in a memo, although they didn't unnecessarily refresh to my observation.
 
+Error handling: 
+I tried to include as many scenarios as possible, including aborting in case of timeout.
+
 Testing: 
 Tests wasn't mentioned but I still wanted to add at least one - I also didn't install a library, I am using native Node.JS Test Runner.
 but Node.js 18 or newer is needed to use the built-in test runner.
