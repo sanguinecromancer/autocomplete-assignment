@@ -30,6 +30,12 @@ PARENT.
 
 5. What is a fragment and why do we need it? Give an example where it
 might break my app.
+
+It's this pattern we usually use for wrapping our JSX into a parent: <></>
+We need it because sometimes we don't want to add an extra element to the DOM as it my break the CSS styling.
+
+
+
 6. Give 3 examples of the HOC pattern.
 7. What's the difference in handling exceptions in promises,
 callbacks and async…await?
