@@ -1,1 +1,0 @@
-export const API_URL = 'http://rickandmortyapi.com/api/character';

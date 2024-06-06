@@ -1,10 +1,9 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-//import AutoComplete from './Components/AutoComplete';
-import './App.css';
 import loadAllCharacters from './api/api';
 import { Character } from './types';
 import Loading from './Components/Loading';
 
+// Lazy loading the AutoComplete component
 const AutoComplete = lazy(() => import('./Components/AutoComplete'));
 
 function App() {
@@ -28,6 +27,7 @@ function App() {
     fetchCharacters();
   }, [refreshKey]);
 
+  // let's trigger a refresh with a refresh key, if button is clicked
   const handleRefresh = () => {
     setRefreshKey((prevKey) => prevKey + 1);
   };
@@ -39,7 +39,6 @@ function App() {
       </main>
     );
   }
-
 
   // let's display a refresh button if character cache is empty
   if (error || !characters || characters.length === 0) {
@@ -55,6 +54,8 @@ function App() {
     );
   }
 
+  
+  // let's wrap AutoComplete in React Suspense for lazy loading
   return (
     <main>
       <Suspense fallback={<Loading />}>

@@ -1,5 +1,5 @@
+import API_URL from "../constants";
 import { Character } from "../types";
-import { API_URL } from '../constants';
 
 const loadAllCharacters = async (): Promise<Character[]> => {
 

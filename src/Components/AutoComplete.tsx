@@ -5,64 +5,83 @@ interface AutoCompleteProps {
   characters: Character[];
 }
 
+// let's add a debounce function to limit the rate at which our function is executed
+const debounce = <T extends (...args: unknown[]) => void>(func: T, wait: number) => {
+	let timeout: NodeJS.Timeout;
+	return (...args: Parameters<T>) => {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			func(...args);
+		}, wait);
+	};
+};
+
+
 const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState<Character[]>([]);
-	const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-	const [debouncedSearch, setDebouncedSearch] = useState(search);
-	const dropdownRef = useRef<HTMLDivElement>(null);
-	
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-
-	// using useCallback to make sure the function is memoized and does not unnecessarily re-render
+	// Memoized handler for changes in the search input
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearch(value);
-	}, []);
+  }, []);
 
 
-	const handleSelect = useCallback((character: Character) => {
+	// Memoized handler for selection of a character from the suggestions
+  const handleSelect = useCallback((character: Character) => {
     setSelectedCharacter(character);
     setSearch('');
     setSuggestions([]);
   }, []);
 
-
-	const handleClickOutside = useCallback((event: MouseEvent) => {
+	// Memoized handler for clicks outside the dropdown to close it
+  const handleClickOutside = useCallback((event: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setSuggestions([]);
     }
   }, []);
 
-	useEffect(() => {
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [handleClickOutside]);
 
-	useEffect(() => {
-    const handler = setTimeout(() => {
+	// useEffect to debounce the search input
+  useEffect(() => {
+    const handler = debounce(async () => {
       setDebouncedSearch(search);
     }, 200);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    handler();
   }, [search]);
 
-  useEffect(() => {
-    if (debouncedSearch.length > 0) {
-      const filtered = characters.filter(character =>
-        character.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+	// useEffect to fetch and filter characters based on the debounced search query
+	useEffect(() => {
+    const fetchFilteredCharacters = async (query: string): Promise<Character[]> => {
+      const filteredCharacters = characters.filter(character =>
+        character.name.toLowerCase().includes(query.toLowerCase())
       );
-      setSuggestions(filtered);
-    } else {
-      setSuggestions([]);
-    }
+      return filteredCharacters;
+    };
+
+    const fetchData = async () => {
+      if (debouncedSearch.length > 0) {
+        const filteredCharacters = await fetchFilteredCharacters(debouncedSearch);
+        setSuggestions(filteredCharacters);
+      } else {
+        setSuggestions([]);
+      }
+    };
+
+    fetchData();
   }, [debouncedSearch, characters]);
 
-	const getHighlightedText = (text: string, highlight: string) => {
+  const getHighlightedText = (text: string, highlight: string) => {
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
     return (
       <span>
@@ -80,7 +99,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   };
 
   return (
-    <section className="container" >
+    <section className="container">
       <div className="group" ref={dropdownRef}>
         <div className="form-control">
           <input
@@ -91,7 +110,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
             placeholder="Search characters"
           />
         </div>
-        {suggestions?.length > 0 && (
+        {suggestions.length > 0 && (
           <ul className="suggestions">
             {suggestions.map(character => (
               <li key={character.id} onClick={() => handleSelect(character)}>
@@ -100,14 +119,11 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
             ))}
           </ul>
         )}
-
-				
-				{selectedCharacter && (
+        {selectedCharacter && (
           <div className="selected-character">
             Selected Character: {selectedCharacter.name}
           </div>
         )}
-
       </div>
     </section>
   );
