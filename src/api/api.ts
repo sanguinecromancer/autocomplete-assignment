@@ -1,28 +1,27 @@
 import API_URL from "../constants";
 import { Character } from "../types";
 
-const loadAllCharacters = async (): Promise<Character[]> => {
+const loadAllCharacters = async (): Promise < Character[] > => {
 
 	try {
-
 		let allCharacters: Character[] = [];
 		let url = API_URL;
 
-			while (url) {
-				const res = await fetch(url);
+		while (url) { // looping the url because of paginated response
+			const res = await fetch(url);
 
-				if (!res.ok) {
+			if (!res.ok) {
 				if (res.status === 404) {
-						throw new Error('Resource not found (404)');
+					throw new Error('Resource not found (404)');
 				} else if (res.status >= 500) {
-						throw new Error('Server error, please try again later');
+					throw new Error('Server error, please try again later');
 				} else {
-						throw new Error(`Unexpected error: ${res.status}`);
+					throw new Error(`Unexpected error: ${res.status}`);
 				}
 			}
 
 			const data = await res.json();
-			allCharacters = [...allCharacters, ...data.results];
+			allCharacters = [...allCharacters, ...JSON.parse(JSON.stringify(data.results))];
 			url = data.info.next; // next page URL
 		}
 		console.log(allCharacters);
@@ -33,4 +32,4 @@ const loadAllCharacters = async (): Promise<Character[]> => {
 	}
 };
 
-  export default loadAllCharacters;
+export default loadAllCharacters;

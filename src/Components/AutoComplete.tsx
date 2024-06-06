@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Character } from '../types';
 
 interface AutoCompleteProps {
@@ -16,7 +16,6 @@ const debounce = <T extends (...args: unknown[]) => void>(func: T, wait: number)
 	};
 };
 
-
 const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState<Character[]>([]);
@@ -29,7 +28,6 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
     const value = event.target.value;
     setSearch(value);
   }, []);
-
 
 	// Memoized handler for selection of a character from the suggestions
   const handleSelect = useCallback((character: Character) => {
@@ -100,6 +98,10 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
 
   return (
     <section className="container">
+			<div className='title'>
+        <h2>Rick and Morty Characters</h2>
+        <div className='title-underline'></div>
+      </div>
       <div className="group" ref={dropdownRef}>
         <div className="form-control">
           <input
@@ -119,12 +121,12 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
             ))}
           </ul>
         )}
-        {selectedCharacter && (
-          <div className="selected-character">
-            Selected Character: {selectedCharacter.name}
-          </div>
-        )}
       </div>
+			{selectedCharacter && (
+				<div className="selected-character">
+					<p>Selected Character: {selectedCharacter.name}</p>
+				</div>
+			)}
     </section>
   );
 };

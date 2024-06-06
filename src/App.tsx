@@ -3,10 +3,9 @@ import loadAllCharacters from './api/api';
 import { Character } from './types';
 import Loading from './Components/Loading';
 
-// Lazy loading the AutoComplete component
 const AutoComplete = lazy(() => import('./Components/AutoComplete'));
 
-function App() {
+const App = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +39,7 @@ function App() {
     );
   }
 
-  // let's display a refresh button if character cache is empty
+  // displaying a refresh button if character cache is empty
   if (error || !characters || characters.length === 0) {
     return (
       <main>
@@ -54,8 +53,7 @@ function App() {
     );
   }
 
-  
-  // let's wrap AutoComplete in React Suspense for lazy loading
+  // wrapping AutoComplete in React Suspense for lazy loading
   return (
     <main>
       <Suspense fallback={<Loading />}>
