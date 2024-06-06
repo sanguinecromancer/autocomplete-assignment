@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Character } from '../App';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Character } from '../types';
 
 interface AutoCompleteProps {
   characters: Character[];
@@ -10,6 +10,8 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   const [suggestions, setSuggestions] = useState<Character[]>([]);
 	const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 	const [debouncedSearch, setDebouncedSearch] = useState(search);
+	const dropdownRef = useRef<HTMLDivElement>(null);
+	
 
 
 	// using useCallback to make sure the function is memoized and does not unnecessarily re-render
@@ -17,6 +19,27 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
     const value = event.target.value;
     setSearch(value);
 	}, []);
+
+
+	const handleSelect = useCallback((character: Character) => {
+    setSelectedCharacter(character);
+    setSearch('');
+    setSuggestions([]);
+  }, []);
+
+
+	const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setSuggestions([]);
+    }
+  }, []);
+
+	useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [handleClickOutside]);
 
 	useEffect(() => {
     const handler = setTimeout(() => {
@@ -39,11 +62,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
     }
   }, [debouncedSearch, characters]);
 
-	const handleSelect = useCallback((character: Character) => {
-    setSelectedCharacter(character);
-    setSearch('');
-    setSuggestions([]);
-  }, []);
+
 
 	const getHighlightedText = (text: string, highlight: string) => {
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
@@ -63,8 +82,8 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   };
 
   return (
-    <section className="container">
-      <div className="group">
+    <section className="container" >
+      <div className="group" ref={dropdownRef}>
         <div className="form-control">
           <input
             type="text"

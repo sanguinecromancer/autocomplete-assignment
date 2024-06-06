@@ -1,10 +1,12 @@
-import { Character } from './../App';
+import { Character } from "../types";
+import { API_URL } from '../constants';
 
 const loadAllCharacters = async (): Promise<Character[]> => {
+
 	try {
 
 		let allCharacters: Character[] = [];
-		let url = 'http://rickandmortyapi.com/api/character';
+		let url = API_URL;
 
 			while (url) {
 				const res = await fetch(url);
