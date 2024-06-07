@@ -35,7 +35,7 @@ We need it because sometimes we don't want to add an extra element to the DOM as
 
 6. Give 3 examples of the HOC pattern.
 
-It takes a component and returns a component, but I can remember one popular example:
+It takes a component and returns a component, but I can remember one popular example in React:
 "connect" from react-redux is one of the most popular high order components.
 Authentication, managing state are also HOCs.
 
@@ -43,7 +43,7 @@ Authentication, managing state are also HOCs.
 7. What's the difference in handling exceptions in promises,
 callbacks and async…await?
 
-Callbacks check right away the first argument, if it's an error.
+Callbacks check the first argument right away, if it's an error.
 Promises use .catch() method.
 Async await use try and catch blocks to catch the errors.
 
@@ -62,7 +62,7 @@ Easiest part is the render method as it can directly be used in the return of th
 Hardest part is to convert the lifecycle methods. you need to consider an appropriate hook like useEffect, useRef - depending on what you want to do.
 
 
-In my current company we are doing this right now just by writing the new components as function components :) our app had started 
+In my current company we are doing this right now just by writing the new components as function components. Our app had started 
 6 years ago with class based components.
 
 
