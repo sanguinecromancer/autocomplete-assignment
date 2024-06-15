@@ -1,4 +1,3 @@
-Hello! This is Zeynep :)
 
 #### Starting the project
 
