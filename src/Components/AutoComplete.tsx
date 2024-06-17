@@ -47,7 +47,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
 
   // Debounced function to filter characters
   const debouncedFetchData = useCallback(
-    debounce(async (query: string) => {
+    debounce(async (query: any) => {
       if (query.length > 0) {
         const filteredCharacters = characters.filter(character =>
           character.name.toLowerCase().includes(query.toLowerCase())
