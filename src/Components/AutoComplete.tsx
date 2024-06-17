@@ -5,38 +5,33 @@ interface AutoCompleteProps {
   characters: Character[];
 }
 
-// let's add a debounce function to limit the rate at which our function is executed
+// Debounce function to limit the rate at which a function is executed
 const debounce = <T extends (...args: unknown[]) => void>(func: T, wait: number) => {
-	let timeout: NodeJS.Timeout;
-	return (...args: Parameters<T>) => {
-		clearTimeout(timeout);
-		timeout = setTimeout(() => {
-			func(...args);
-		}, wait);
-	};
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
 };
 
 const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState<Character[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-	// Memoized handler for changes in the search input
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearch(value);
+    setSearch(event.target.value);
   }, []);
 
-	// Memoized handler for selection of a character from the suggestions
   const handleSelect = useCallback((character: Character) => {
     setSelectedCharacter(character);
     setSearch('');
     setSuggestions([]);
   }, []);
 
-	// Memoized handler for clicks outside the dropdown to close it
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setSuggestions([]);
@@ -50,34 +45,25 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
     };
   }, [handleClickOutside]);
 
-	// useEffect to debounce the search input
-  useEffect(() => {
-    const handler = debounce(async () => {
-      setDebouncedSearch(search);
-    }, 200);
-    handler();
-  }, [search]);
-
-	// useEffect to fetch and filter characters based on the debounced search query
-	useEffect(() => {
-    const fetchFilteredCharacters = async (query: string): Promise<Character[]> => {
-      const filteredCharacters = characters.filter(character =>
-        character.name.toLowerCase().includes(query.toLowerCase())
-      );
-      return filteredCharacters;
-    };
-
-    const fetchData = async () => {
-      if (debouncedSearch.length > 0) {
-        const filteredCharacters = await fetchFilteredCharacters(debouncedSearch);
+  // Debounced function to filter characters
+  const debouncedFetchData = useCallback(
+    debounce(async (query: string) => {
+      if (query.length > 0) {
+        const filteredCharacters = characters.filter(character =>
+          character.name.toLowerCase().includes(query.toLowerCase())
+        );
         setSuggestions(filteredCharacters);
       } else {
         setSuggestions([]);
       }
-    };
+    }, 300),
+    [characters]
+  );
 
-    fetchData();
-  }, [debouncedSearch, characters]);
+  // useEffect to call the debounced fetch data function
+  useEffect(() => {
+    debouncedFetchData(search);
+  }, [search, debouncedFetchData]);
 
   const getHighlightedText = (text: string, highlight: string) => {
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
@@ -98,7 +84,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
 
   return (
     <section className="container">
-			<div className='title'>
+      <div className='title'>
         <h2>Rick and Morty Characters</h2>
         <div className='title-underline'></div>
       </div>
@@ -116,17 +102,17 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ characters }) => {
           <ul className="suggestions">
             {suggestions.map(character => (
               <li key={character.id} onClick={() => handleSelect(character)}>
-                {getHighlightedText(character.name, debouncedSearch)}
+                {getHighlightedText(character.name, search)}
               </li>
             ))}
           </ul>
         )}
       </div>
-			{selectedCharacter && (
-				<div className="selected-character">
-					<p>Selected Character: {selectedCharacter.name}</p>
-				</div>
-			)}
+      {selectedCharacter && (
+        <div className="selected-character">
+          <p>Selected Character: {selectedCharacter.name}</p>
+        </div>
+      )}
     </section>
   );
 };
